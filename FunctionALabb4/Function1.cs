@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -33,7 +34,7 @@ namespace FunctionALabb4
 
         }
 
-        private static User GetCustomer(string email)
+        private static List<User> GetCustomer(string email)
         {
 
             string EndpointUrl = "https://picturesdb.documents.azure.com:443/";
@@ -49,7 +50,7 @@ namespace FunctionALabb4
                     "SELECT * FROM Users",
                     queryOptions);
 
-            var user = query.ToList().FirstOrDefault();
+            var user = query.ToList();
             return user;
 
         }
