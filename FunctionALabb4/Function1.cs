@@ -1,7 +1,9 @@
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
@@ -16,19 +18,40 @@ namespace FunctionALabb4
             log.Info("C# HTTP trigger function processed a request.");
 
             // parse query parameter
-            string name = req.GetQueryNameValuePairs()
-                .FirstOrDefault(q => string.Compare(q.Key, "name", true) == 0)
+            string email = req.GetQueryNameValuePairs()
+                .FirstOrDefault(q => string.Compare(q.Key, "email", true) == 0)
                 .Value;
 
             // Get request body
             dynamic data = await req.Content.ReadAsAsync<object>();
 
-            // Set name to query string or body data
-            name = name ?? data?.name;
+            email = email ?? data?.email;
 
-            return name == null
-                ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body")
-                : req.CreateResponse(HttpStatusCode.OK, "Hello " + name);
+            var customer = GetCustomer(email);
+            return req.CreateResponse(HttpStatusCode.OK, customer, "application/json");
+
+
+        }
+
+        private static User GetCustomer(string email)
+        {
+
+            string EndpointUrl = "https://picturesdb.documents.azure.com:443/";
+            string PrimaryKey = "cHRKIwWfOVFQOxDG8h33OIr0YoIpWZQRe3G1DF7ha43ZfxVhr7Ev8wdc0wgvMUpDoCWsI50dYrOlpswocncohg==";
+            string databaseName = "PicturesDB";
+            string collectionName = "Users";
+
+            var client = new DocumentClient(new Uri(EndpointUrl), PrimaryKey);
+            FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true };
+
+            var query = client.CreateDocumentQuery<User>(
+                    UriFactory.CreateDocumentCollectionUri(databaseName, collectionName),
+                    "SELECT * FROM Users",
+                    queryOptions);
+
+            var user = query.ToList().FirstOrDefault();
+            return user;
+
         }
     }
 }
