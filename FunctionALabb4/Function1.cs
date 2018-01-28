@@ -19,17 +19,26 @@ namespace FunctionALabb4
             log.Info("C# HTTP trigger function processed a request.");
 
             // parse query parameter
-            string pictureURL = req.GetQueryNameValuePairs()
-                .FirstOrDefault(q => string.Compare(q.Key, "pictureURL", true) == 0)
+            string mode = req.GetQueryNameValuePairs()
+                .FirstOrDefault(q => string.Compare(q.Key, "mode", true) == 0)
                 .Value;
 
             // Get request body
             dynamic data = await req.Content.ReadAsAsync<object>();
 
-            pictureURL = pictureURL ?? data?.pictureURL;
+            mode = mode ?? data?.pictureURL;
 
-            var picture = GetPicture(pictureURL);
+            if(mode== "viewReviewQueue")
+            {
+            var picture = GetPicture(mode);
             return req.CreateResponse(HttpStatusCode.OK, picture, "application/json");
+
+            }
+            else
+            {
+                return req.CreateResponse(HttpStatusCode.BadRequest, "Please enter mode.");
+            }
+
 
 
         }
