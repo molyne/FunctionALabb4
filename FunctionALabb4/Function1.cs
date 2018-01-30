@@ -89,14 +89,14 @@ namespace FunctionALabb4
             var client = new DocumentClient(new Uri(EndpointUrl), PrimaryKey);
             FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true };
 
-            var query = client.CreateDocumentQuery<Picture>(
-           UriFactory.CreateDocumentCollectionUri(databaseName, fromCollectionName), "SELECT * FROM Pending pictures",
-            queryOptions);
+           // var query = client.CreateDocumentQuery<Picture>(
+           //UriFactory.CreateDocumentCollectionUri(databaseName, fromCollectionName), "SELECT * FROM Pending pictures",
+           // queryOptions);
 
             int id2 = int.Parse(id);
 
             IQueryable customerQuery = client.CreateDocumentQuery<Picture>(
-                           UriFactory.CreateDocumentCollectionUri(databaseName, fromCollectionName), "INSERT INTO Reviewed pictures SELECT* FROM pending pictures", queryOptions).Where(doc=>doc._id==id2);
+                           UriFactory.CreateDocumentCollectionUri(databaseName, fromCollectionName), "INSERT INTO Reviewed pictures SELECT* FROM Pending pictures", queryOptions).Where(doc=>doc._id==id2);
 
 
 
