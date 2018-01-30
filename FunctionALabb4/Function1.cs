@@ -87,24 +87,27 @@ namespace FunctionALabb4
             string toCollectionName = "Reviewed pictures";
 
             var client = new DocumentClient(new Uri(EndpointUrl), PrimaryKey);
+
             FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true };
 
-           // var query = client.CreateDocumentQuery<Picture>(
-           //UriFactory.CreateDocumentCollectionUri(databaseName, fromCollectionName), "SELECT * FROM Pending pictures",
-           // queryOptions);
+       
 
             int id2 = int.Parse(id);
+            var collectionLink = UriFactory.CreateDocumentCollectionUri(databaseName, fromCollectionName);
+            var collectionLink2 = UriFactory.CreateDocumentCollectionUri(databaseName, toCollectionName);
 
-            IQueryable customerQuery = client.CreateDocumentQuery<Picture>(
-                           UriFactory.CreateDocumentCollectionUri(databaseName, fromCollectionName), "INSERT INTO Reviewed pictures SELECT* FROM Pending pictures", queryOptions).Where(doc=>doc._id==id2);
+            var query = client.CreateDocumentQuery<Picture>(collectionLink)
+                               .Where(r => r._id == id2)
+                              .AsEnumerable()
+                              .SingleOrDefault();
+            client.CreateDocumentQuery<Picture>(collectionLink2, $"INSERT INTO [Reviewed pictures] (_id,PictureURL) VALUES ({query._id},{query.PictureURL})");
+//             client.UpsertDocument(collectionLink2, query).RunSynchronously();
 
 
 
 
-            //string query4 = "INSERT INTO Reviewed pictures SELECT* FROM pending pictures;where doc.id = id
-
-
-            return "Successfully approved picture";
+            //ändra så den returner om det lyckades eller inte
+            return "hej";
         }
     }
 }
