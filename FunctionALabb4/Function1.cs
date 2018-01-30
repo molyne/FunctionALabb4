@@ -23,15 +23,27 @@ namespace FunctionALabb4
                 .FirstOrDefault(q => string.Compare(q.Key, "mode", true) == 0)
                 .Value;
 
+            string id = req.GetQueryNameValuePairs()
+                .FirstOrDefault(q => string.Compare(q.Key, "id", true) == 0)
+                .Value;
+
             // Get request body
             dynamic data = await req.Content.ReadAsAsync<object>();
 
             mode = mode ?? data?.pictureURL;
 
+            ApprovePicture(); //försöker bara hämta information 
+
             if(mode== "viewReviewQueue")
             {
             var picture = GetPicture(mode);
             return req.CreateResponse(HttpStatusCode.OK, picture, "application/json");
+
+            }
+            if(mode== "approve" && id!=null)
+            {
+                var approvePicture = ApprovePicture(/*id*/);
+                return req.CreateResponse(HttpStatusCode.OK, approvePicture, "application/json");
 
             }
             else
@@ -50,6 +62,7 @@ namespace FunctionALabb4
             string PrimaryKey = "cHRKIwWfOVFQOxDG8h33OIr0YoIpWZQRe3G1DF7ha43ZfxVhr7Ev8wdc0wgvMUpDoCWsI50dYrOlpswocncohg==";
             string databaseName = "PicturesDB";
             string collectionName = "Pending pictures";
+            string toCollectionName = "Reviewed pictures";
 
             var client = new DocumentClient(new Uri(EndpointUrl), PrimaryKey);
             FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true };
@@ -62,6 +75,28 @@ namespace FunctionALabb4
             var picture = query.ToList();
             return picture;
 
+        }
+        private static string ApprovePicture(/*string id*/)
+        {
+            string EndpointUrl = "https://picturesdb.documents.azure.com:443/";
+            string PrimaryKey = "cHRKIwWfOVFQOxDG8h33OIr0YoIpWZQRe3G1DF7ha43ZfxVhr7Ev8wdc0wgvMUpDoCWsI50dYrOlpswocncohg==";
+            string databaseName = "PicturesDB";
+            string fromCollectionName = "Pending pictures";
+            string toCollectionName = "Reviewed pictures";
+
+            var client = new DocumentClient(new Uri(EndpointUrl), PrimaryKey);
+            FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true };
+
+            var query = client.CreateDocumentQuery<Picture>(
+           UriFactory.CreateDocumentCollectionUri(databaseName, fromCollectionName), "SELECT * FROM Pending pictures",
+            queryOptions);//la till id i picture klassen eftersom man inte kan komma åt id annars. Tänker att det automatiska id man får är för långt att skriva in.
+
+            var query2 = client.CreateDocumentQuery(
+                            UriFactory.CreateDocumentCollectionUri(databaseName,fromCollectionName), queryOptions)
+                            .Where(doc=>doc.Id
+
+
+            return "Successfully approved picture";
         }
     }
 }
