@@ -9,5 +9,6 @@ namespace FunctionALabb4
     class Picture
     {
         public string PictureURL { get; set; }
+        public int _id { get; set; }
     }
 }

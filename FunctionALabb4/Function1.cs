@@ -32,7 +32,9 @@ namespace FunctionALabb4
 
             mode = mode ?? data?.pictureURL;
 
-            ApprovePicture(); //försöker bara hämta information 
+            id = id ?? data?._id;
+
+       
 
             if(mode== "viewReviewQueue")
             {
@@ -42,7 +44,7 @@ namespace FunctionALabb4
             }
             if(mode== "approve" && id!=null)
             {
-                var approvePicture = ApprovePicture(/*id*/);
+                var approvePicture = ApprovePicture(id);
                 return req.CreateResponse(HttpStatusCode.OK, approvePicture, "application/json");
 
             }
@@ -76,7 +78,7 @@ namespace FunctionALabb4
             return picture;
 
         }
-        private static string ApprovePicture(/*string id*/)
+        private static string ApprovePicture(string id)
         {
             string EndpointUrl = "https://picturesdb.documents.azure.com:443/";
             string PrimaryKey = "cHRKIwWfOVFQOxDG8h33OIr0YoIpWZQRe3G1DF7ha43ZfxVhr7Ev8wdc0wgvMUpDoCWsI50dYrOlpswocncohg==";
@@ -89,11 +91,17 @@ namespace FunctionALabb4
 
             var query = client.CreateDocumentQuery<Picture>(
            UriFactory.CreateDocumentCollectionUri(databaseName, fromCollectionName), "SELECT * FROM Pending pictures",
-            queryOptions);//la till id i picture klassen eftersom man inte kan komma åt id annars. Tänker att det automatiska id man får är för långt att skriva in.
+            queryOptions);
 
-            var query2 = client.CreateDocumentQuery(
-                            UriFactory.CreateDocumentCollectionUri(databaseName,fromCollectionName), queryOptions)
-                            .Where(doc=>doc.Id
+            int id2 = int.Parse(id);
+
+            IQueryable customerQuery = client.CreateDocumentQuery<Picture>(
+                           UriFactory.CreateDocumentCollectionUri(databaseName, fromCollectionName), "INSERT INTO Reviewed pictures SELECT* FROM pending pictures", queryOptions).Where(doc=>doc._id==id2);
+
+
+
+
+            //string query4 = "INSERT INTO Reviewed pictures SELECT* FROM pending pictures;where doc.id = id
 
 
             return "Successfully approved picture";
