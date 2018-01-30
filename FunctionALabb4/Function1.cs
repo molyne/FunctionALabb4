@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -91,14 +92,19 @@ namespace FunctionALabb4
                               .SingleOrDefault();
 
             //lägger till valda dokumentet i reviewed pictures
-            await client.CreateDocumentAsync(reviewedCollectionLink, picture);
+            ResourceResponse<Document> response  = await client.CreateDocumentAsync(reviewedCollectionLink, picture);
+
+            var createdDocument = response.Resource;
+
+            Console.WriteLine("Document with id {0} created", createdDocument.Id);
+            Console.WriteLine("Request charge of operation: {0}", response.RequestCharge);
 
             //tar bort det valda dokumentet från pending pictures
             await client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, pendingCollection, selectedId));
 
 
             //ändra så den returner om det lyckades eller inte
-            return "hej";
+            return $"Picture with id {createdDocument.Id} approved";
         }
        
 
