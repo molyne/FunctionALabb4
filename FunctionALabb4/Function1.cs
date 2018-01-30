@@ -78,7 +78,7 @@ namespace FunctionALabb4
             return picture;
 
         }
-        private static string ApprovePicture(string id)
+        private static string ApprovePicture(string selectedId)
         {
             string EndpointUrl = "https://picturesdb.documents.azure.com:443/";
             string PrimaryKey = "cHRKIwWfOVFQOxDG8h33OIr0YoIpWZQRe3G1DF7ha43ZfxVhr7Ev8wdc0wgvMUpDoCWsI50dYrOlpswocncohg==";
@@ -92,12 +92,11 @@ namespace FunctionALabb4
 
        
 
-            int id2 = int.Parse(id);
             var collectionLink = UriFactory.CreateDocumentCollectionUri(databaseName, fromCollectionName);
             var collectionLink2 = UriFactory.CreateDocumentCollectionUri(databaseName, toCollectionName);
 
             var query = client.CreateDocumentQuery<Picture>(collectionLink)
-                               .Where(r => r._id == id2)
+                               .Where(r => r._id == selectedId)
                               .AsEnumerable()
                               .SingleOrDefault();
             client.CreateDocumentQuery<Picture>(collectionLink2, $"INSERT INTO [Reviewed pictures] (_id,PictureURL) VALUES ({query._id},{query.PictureURL})");
