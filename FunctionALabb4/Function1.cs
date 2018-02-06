@@ -59,9 +59,9 @@ namespace FunctionALabb4
             }
             if(mode== "approve" && id!=null)
             {
-                var approvePicture = ApprovePicture(id);
-                return req.CreateResponse(HttpStatusCode.OK, approvePicture, "application/json");
-
+                string approvePicture = await ApprovePicture(id);
+                
+                    return req.CreateResponse(HttpStatusCode.OK, approvePicture, "application/json");     
             }
             else
             {
@@ -91,21 +91,34 @@ namespace FunctionALabb4
                               .AsEnumerable()
                               .SingleOrDefault();
 
-            //lägger till valda dokumentet i reviewed pictures
-            ResourceResponse<Document> response  = await client.CreateDocumentAsync(reviewedCollectionLink, picture);
+            if (picture == null)
+            {
+                return "Selected id doesn't exist or is already approved.";
+            }
+            else
+            {
 
-            var createdDocument = response.Resource;
+                //lägger till valda dokumentet i reviewed pictures
+                ResourceResponse<Document> response = 
+                await client.CreateDocumentAsync(reviewedCollectionLink, picture);
 
-            Console.WriteLine("Document with id {0} created", createdDocument.Id);
-            Console.WriteLine("Request charge of operation: {0}", response.RequestCharge);
-
-            //tar bort det valda dokumentet från pending pictures
-            await client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, pendingCollection, selectedId));
+                var createdDocument = response.Resource;
 
 
-            //ändra så den returner om det lyckades eller inte
-            return $"Picture with id {createdDocument.Id} approved";
+
+                Console.WriteLine("Document with id {0} created", createdDocument.Id);
+                Console.WriteLine("Request charge of operation: {0}", response.RequestCharge);
+
+                //tar bort det valda dokumentet från pending pictures
+                await client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, pendingCollection, selectedId));
+
+
+                //ändra så den returner om det lyckades eller inte
+                return $"Picture with id {createdDocument.Id} approved";
+            }
+
         }
+     
        
 
 
