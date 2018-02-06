@@ -42,6 +42,7 @@ namespace FunctionALabb4
                 .FirstOrDefault(q => string.Compare(q.Key, "id", true) == 0)
                 .Value;
 
+
             // Get request body
             dynamic data = await req.Content.ReadAsAsync<object>();
 
@@ -62,6 +63,12 @@ namespace FunctionALabb4
                 string approvePicture = await ApprovePicture(id);
                 
                     return req.CreateResponse(HttpStatusCode.OK, approvePicture, "application/json");     
+            }
+            if(mode=="reject" && id != null)
+            {
+                string rejectPicture = await RejectPicture(id);
+
+                return req.CreateResponse(HttpStatusCode.OK, rejectPicture, "application/json");
             }
             else
             {
@@ -116,6 +123,26 @@ namespace FunctionALabb4
                 //ändra så den returner om det lyckades eller inte
                 return $"Picture with id {createdDocument.Id} approved";
             }
+
+        }
+        private static async Task<string> RejectPicture(string selectedId)
+        {
+            var picture = client.CreateDocumentQuery<Picture>(pendingCollectionLink)
+                              .Where(r => r._id == selectedId)
+                             .AsEnumerable()
+                             .SingleOrDefault();
+
+            if(picture == null)
+            {
+                return "Picture doesn't exist";
+            }
+
+            await client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, pendingCollection, selectedId));
+
+           
+
+            return $"Picture with id {selectedId} rejected";
+
 
         }
      
