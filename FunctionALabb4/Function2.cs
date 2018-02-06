@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.WebJobs;
@@ -27,12 +28,28 @@ namespace FunctionALabb4
 
             log.Info($"C# Timer trigger function executed at: {DateTime.Now}");
 
-            var picture = client.CreateDocumentQuery<Picture>(pendingCollectionLink)
-                               .Where(r => r.PictureURL == "png")
-                              .AsEnumerable()
-                              .SingleOrDefault();
+            var pictures = client.CreateDocumentQuery<Picture>(pendingCollectionLink)
+                               .Where(r => r.PictureURL.EndsWith(".png"))
+                               .AsEnumerable();
+            foreach(var p in pictures)
+            {
 
-             client.CreateDocumentAsync(reviewedCollectionLink, picture);
+                client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, pendingCollection, p._id));
+
+                client.CreateDocumentAsync(reviewedCollectionLink, p);
+                    
+                    
+                    //createdoc.
+            }
+
+            //var queue = new Queue<Picture>(picture);
+
+            //for (int i = 0; i < queue.Count; i++)
+            //{
+            //    //client.CreateDocumentAsync(reviewedCollectionLink, queue.Dequeue());
+
+            //}
+
 
         }
     }
